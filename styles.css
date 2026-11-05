@@ -1771,8 +1771,8 @@ body {
 
 .auth-logo {
   width: auto;
-  height: 46px;
-  max-width: 150px;
+  height: 64px;
+  max-width: 64px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -2134,8 +2134,8 @@ body {
   }
 
   .auth-logo {
-    height: 40px;
-    max-width: 125px;
+    height: 54px;
+    max-width: 54px;
   }
 }
 
