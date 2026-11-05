@@ -1770,9 +1770,10 @@ body {
 }
 
 .auth-logo {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
+  width: auto;
+  height: 46px;
+  max-width: 150px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -2133,8 +2134,8 @@ body {
   }
 
   .auth-logo {
-    width: 44px;
-    height: 44px;
+    height: 40px;
+    max-width: 125px;
   }
 }
 
