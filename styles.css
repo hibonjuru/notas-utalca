@@ -2139,5 +2139,107 @@ body {
   }
 }
 
+/* ==========================================================================
+   Pantalla de carga inicial y estado de sincronización
+   ========================================================================== */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: var(--bg);
+}
+
+.boot-screen[hidden] {
+  display: none !important;
+}
+
+.boot-logo {
+  height: 74px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.boot-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: bootSpin 0.8s linear infinite;
+}
+
+@keyframes bootSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.sync-indicator svg {
+  display: block;
+}
+
+.sync-indicator .sync-ok {
+  display: none;
+}
+
+.sync-indicator.synced {
+  color: var(--ok);
+}
+
+.sync-indicator.synced .sync-spin {
+  display: none;
+}
+
+.sync-indicator.synced .sync-ok {
+  display: block;
+}
+
+.sync-indicator.syncing {
+  color: var(--red);
+}
+
+.sync-indicator.syncing .sync-spin {
+  animation: syncSpin 0.9s linear infinite;
+}
+
+.sync-indicator.error {
+  color: var(--danger);
+}
+
+.sync-indicator.local {
+  display: none;
+}
+
+@keyframes syncSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-spinner,
+  .sync-indicator.syncing .sync-spin {
+    animation: none;
+  }
+}
+
+
 
 

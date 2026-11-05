@@ -51,7 +51,13 @@
     setBusy(false);
   }
 
+  function hideBoot() {
+    const boot = byId('boot-screen');
+    if (boot) boot.hidden = true;
+  }
+
   function showGate() {
+    hideBoot();
     const gate = byId('auth-gate');
     const shell = byId('app-shell');
     if (gate) gate.hidden = false;
@@ -62,6 +68,7 @@
   }
 
   function showApp() {
+    hideBoot();
     const gate = byId('auth-gate');
     const shell = byId('app-shell');
     if (gate) gate.hidden = true;

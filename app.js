@@ -1150,6 +1150,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   let remotePollTimer = null;
   let remotePollInFlight = false;
   let remoteUnsubscribe = null;
+  let remoteLoadFailed = false;
   let bannerTimer = null;
   let currentSection = 'home';
   let selectedCourseId = null;
@@ -1390,6 +1391,21 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     }
   }
 
+  function setSyncStatus(status) {
+    const labels = {
+      syncing: 'Sincronizando…',
+      synced: 'Sincronizado',
+      error: 'No se pudo sincronizar',
+      local: 'Solo en este navegador'
+    };
+    document.querySelectorAll('[data-sync-indicator]').forEach((element) => {
+      element.classList.remove('syncing', 'synced', 'error', 'local');
+      element.classList.add(status);
+      element.setAttribute('aria-label', labels[status] || labels.synced);
+      element.setAttribute('title', labels[status] || labels.synced);
+    });
+  }
+
   async function loadState() {
     const defaults = getDefaultCourses();
     const cacheKey = getUserCacheKey();
@@ -1400,6 +1416,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       remote = await window.NotasCloud.loadState(currentUser.id);
     } catch (error) {
       console.warn('No se pudo cargar el estado remoto:', error);
+      remoteLoadFailed = true;
+      setSyncStatus('error');
       showCloudBanner('Sin conexión con la nube. Usando la copia local.', 'warn', 0);
     }
 
@@ -1463,10 +1481,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       remoteSaveTimer = null;
       if (remoteSavePromise) return;
       remoteDirty = false;
+      setSyncStatus('syncing');
 
       remoteSavePromise = window.NotasCloud.saveState(currentUser.id, state, stateVersion)
         .then((result) => {
           if (result && result.conflict) {
+            setSyncStatus('error');
             showCloudBanner(
               'Hay cambios guardados en otro dispositivo. Recarga para revisar la versión más reciente.',
               'warn',
@@ -1478,14 +1498,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             stateVersion = result.version;
             writeLocalCache();
           }
-          showCloudBanner(
-            window.NotasCloud.getMode() === 'demo' ? 'Guardado en este dispositivo.' : 'Guardado en la nube.',
-            'ok',
-            1600
-          );
+          setSyncStatus(window.NotasCloud.getMode() === 'demo' ? 'local' : 'synced');
         })
         .catch((error) => {
           console.warn('No se pudo guardar en la nube:', error);
+          setSyncStatus('error');
           showCloudBanner(
             'No se pudo guardar en la nube. Tus cambios quedaron en este dispositivo.',
             'warn',
@@ -1571,7 +1588,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     }
   }
 
-  function applyRemoteState(remote, message = 'Datos actualizados desde otro dispositivo.') {
+  function applyRemoteState(remote) {
     if (!remote || !remote.state || !Array.isArray(remote.state.courses)) return false;
 
     const version = Number(remote.version) || 0;
@@ -1586,7 +1603,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     remoteDirty = false;
     writeLocalCache();
     renderAll();
-    showCloudBanner(message, 'ok', 2500);
+    setSyncStatus('synced');
     return true;
   }
 
@@ -3920,11 +3937,12 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
               remoteDirty = false;
               writeLocalCache();
               renderAll();
-              showCloudBanner('Datos recargados desde la nube.', 'ok', 2500);
+              setSyncStatus('synced');
             } else {
               showCloudBanner('La nube no tiene datos todavía.', 'warn', 3000);
             }
           } catch (error) {
+            setSyncStatus('error');
             showCloudBanner('No se pudo leer la nube. Revisa tu conexión.', 'warn', 4000);
           }
           break;
@@ -3982,6 +4000,9 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
     renderAll();
     setupEvents();
     startRemoteSync();
+    setSyncStatus(
+      remoteLoadFailed ? 'error' : window.NotasCloud.getMode() === 'demo' ? 'local' : 'synced'
+    );
 
     if (window.NotasCloud.getMode() === 'demo') {
       showCloudBanner(
