@@ -303,18 +303,21 @@
       if (currentVersion <= 0) {
         const { data, error } = await client
           .from('user_state')
-          .upsert(
-            {
-              user_id: userId,
-              state,
-              version: 1,
-              updated_at: new Date().toISOString()
-            },
-            { onConflict: 'user_id' }
-          )
+          .insert({
+            user_id: userId,
+            state,
+            version: 1,
+            updated_at: new Date().toISOString()
+          })
           .select('version')
           .maybeSingle();
-        if (error) throw error;
+        if (error) {
+          // 23505 = unique_violation: ya existe una fila; no la sobrescribas a ciegas.
+          if (error.code === '23505' || /duplicate key/i.test(String(error.message || ''))) {
+            return { conflict: true };
+          }
+          throw error;
+        }
         return { version: (data && data.version) || 1 };
       }
 

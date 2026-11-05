@@ -1280,6 +1280,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         JSON.stringify({
           courses: state.courses,
           __version: stateVersion,
+          dirty: Boolean(remoteDirty),
           savedAt: new Date().toISOString()
         })
       );
@@ -1401,8 +1402,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
     const remoteCourses =
       remote && remote.state && Array.isArray(remote.state.courses) ? remote.state.courses : null;
+    const cachedDirty = Boolean(
+      cached && cached.dirty === true && Array.isArray(cached.courses) && cached.courses.length > 0
+    );
 
-    if (remoteCourses && remoteCourses.length > 0) {
+    if (remoteCourses && remoteCourses.length > 0 && !cachedDirty) {
       state = { courses: normalizeCourses(remoteCourses) };
       stateVersion = Number(remote.version) || 0;
       writeLocalCache();
@@ -1411,7 +1415,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
     if (cached && Array.isArray(cached.courses) && cached.courses.length > 0) {
       state = { courses: normalizeCourses(cached.courses) };
-      stateVersion = Number(remote?.version) || Number(cached.__version) || 0;
+      stateVersion = cachedDirty
+        ? Number(cached.__version) || Number(remote?.version) || 0
+        : Number(remote?.version) || Number(cached.__version) || 0;
+      remoteDirty = cachedDirty;
       writeLocalCache();
       scheduleRemoteSave(true);
       return;
@@ -1493,7 +1500,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   }
 
   function saveState(immediate = false) {
-    if (currentUser) writeLocalCache();
+    if (currentUser) {
+      remoteDirty = true;
+      writeLocalCache();
+    }
     scheduleRemoteSave(immediate);
   }
 
@@ -2478,7 +2488,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         ${
           mode === 'demo'
             ? `<button type="button" class="btn" data-action="reset-demo">Cargar ramos de ejemplo</button>`
-            : ''
+            : `<button type="button" class="btn" data-action="reload-cloud">Recargar desde la nube</button>`
         }
         <button type="button" class="btn btn-danger-outline" data-action="delete-all-courses">Borrar todos mis ramos</button>
       </div>
@@ -3774,6 +3784,28 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
             saveState();
             renderAll();
             showCloudBanner('Ramos eliminados.', 'ok', 2000);
+          }
+          break;
+        }
+
+        case 'reload-cloud': {
+          if (!confirm('Se descartarán los cambios locales que no se hayan guardado en la nube. ¿Continuar?')) {
+            break;
+          }
+          try {
+            const remote = await window.NotasCloud.loadState(currentUser.id);
+            if (remote && remote.state && Array.isArray(remote.state.courses)) {
+              state = { courses: normalizeCourses(remote.state.courses) };
+              stateVersion = Number(remote.version) || 0;
+              remoteDirty = false;
+              writeLocalCache();
+              renderAll();
+              showCloudBanner('Datos recargados desde la nube.', 'ok', 2500);
+            } else {
+              showCloudBanner('La nube no tiene datos todavía.', 'warn', 3000);
+            }
+          } catch (error) {
+            showCloudBanner('No se pudo leer la nube. Revisa tu conexión.', 'warn', 4000);
           }
           break;
         }
