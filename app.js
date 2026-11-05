@@ -1507,38 +1507,64 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     scheduleRemoteSave(immediate);
   }
 
+  function parseBackupText(text) {
+    const trimmed = String(text || '').trim();
+    if (!trimmed) throw new Error('El respaldo está vacío.');
+
+    let parsed;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch (jsonError) {
+      // Compatibilidad con el "Código Sync" antiguo de Netlify (base64).
+      let json;
+      try {
+        const binary = atob(trimmed);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        json = new TextDecoder().decode(bytes);
+      } catch (base64Error) {
+        json = decodeURIComponent(escape(atob(trimmed)));
+      }
+      parsed = JSON.parse(json);
+    }
+
+    const rawCourses = Array.isArray(parsed?.courses)
+      ? parsed.courses
+      : Array.isArray(parsed)
+      ? parsed
+      : null;
+
+    if (!rawCourses || rawCourses.length === 0) {
+      throw new Error('El respaldo no contiene ramos válidos.');
+    }
+
+    return normalizeCourses(rawCourses);
+  }
+
+  async function importBackupText(text) {
+    const courses = parseBackupText(text);
+    if (
+      !window.confirm(
+        `Se reemplazarán tus ${state.courses.length} ramos actuales por ${courses.length} ramos del respaldo. ¿Continuar?`
+      )
+    ) {
+      return false;
+    }
+
+    state = { courses };
+    saveState();
+    renderAll();
+    showCloudBanner('Respaldo importado.', 'ok', 2500);
+    return true;
+  }
+
   async function handleImportJson(file) {
     if (!file) return;
     try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      const rawCourses = Array.isArray(parsed?.courses)
-        ? parsed.courses
-        : Array.isArray(parsed)
-        ? parsed
-        : null;
-
-      if (!rawCourses || rawCourses.length === 0) {
-        window.alert('El archivo no contiene ramos válidos.');
-        return;
-      }
-
-      const courses = normalizeCourses(rawCourses);
-      if (
-        !window.confirm(
-          `Se reemplazarán tus ${state.courses.length} ramos actuales por ${courses.length} ramos del respaldo. ¿Continuar?`
-        )
-      ) {
-        return;
-      }
-
-      state = { courses };
-      saveState();
-      renderAll();
-      showCloudBanner('Respaldo importado.', 'ok', 2500);
+      await importBackupText(await file.text());
     } catch (error) {
       console.warn('Error importando respaldo:', error);
-      window.alert('No se pudo leer el respaldo JSON. Verifica el archivo.');
+      window.alert('No se pudo leer el respaldo. Debe ser un JSON o un código sync válido.');
     }
   }
 
@@ -2485,6 +2511,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         <button type="button" class="btn" data-action="export-data">Exportar respaldo JSON</button>
         <label class="btn" for="import-json-input">Importar respaldo JSON</label>
         <input type="file" id="import-json-input" accept="application/json,.json" hidden />
+        <button type="button" class="btn" data-action="import-clipboard">Pegar respaldo desde portapapeles</button>
         ${
           mode === 'demo'
             ? `<button type="button" class="btn" data-action="reset-demo">Cargar ramos de ejemplo</button>`
@@ -3784,6 +3811,26 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
             saveState();
             renderAll();
             showCloudBanner('Ramos eliminados.', 'ok', 2000);
+          }
+          break;
+        }
+
+        case 'import-clipboard': {
+          try {
+            let text = '';
+            if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+              text = await navigator.clipboard.readText();
+            }
+            if (!text || !text.trim()) {
+              text = window.prompt('Pega el JSON o el código sync del respaldo:') || '';
+            }
+            if (!text.trim()) break;
+            await importBackupText(text);
+          } catch (error) {
+            console.warn('No se pudo leer el portapapeles:', error);
+            window.alert(
+              'No se pudo leer el portapapeles. Copia el respaldo y usa "Importar respaldo JSON" con un archivo.'
+            );
           }
           break;
         }

@@ -65,6 +65,10 @@ La `anon key` es pública por diseño. **Nunca** pongas la `service_role` en el 
 ### Limitaciones actuales
 
 - **Vienes de Netlify:** `localStorage` no se comparte entre dominios distintos. Antes de dejar de usar Netlify, entra allá y usa **Respaldo de Datos → Exportar JSON**; luego importa ese archivo en GitHub Pages desde **Mi Cuenta → Importar respaldo JSON**.
+  Si el botón viejo no descarga el archivo (usa `navigator.share` en iPhone), puedes usar **Copiar Código Sync** o el botón **Copiar** de la hoja de compartir, y luego en GitHub Pages usar **Mi Cuenta → Pegar respaldo desde portapapeles**.
+  En PC también puedes abrir la consola del navegador en Netlify y ejecutar:
+  `copy(localStorage.getItem('utalca_organizador_v4'))`
+  y guardar el texto como un archivo `.json`.
 - Sin DV no se puede validar el dígito verificador; solo el largo.
 - No hay recuperación automática de contraseña porque no se pide email real.
   Si olvidas la contraseña, el administrador debe restablecerla desde Supabase.
