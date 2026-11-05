@@ -48,7 +48,7 @@ Para cuentas reales, conecta Supabase desde el botón **Conectar con Supabase** 
 window.NOTAS_CLOUD_CONFIG = {
   url: 'https://TU-PROYECTO.supabase.co',
   anonKey: 'TU_ANON_PUBLIC_KEY',
-  emailDomain: 'notas-utalca.app'
+  emailDomain: 'alumnos.utalca.cl'
 };
 ```
 
@@ -57,8 +57,9 @@ La `anon key` es pública por diseño. **Nunca** pongas la `service_role` en el 
 ### Cómo funciona el RUT
 
 - Se normaliza a 6–8 dígitos, sin DV.
-- Se mapea a un email interno determinista: `rut12345678@notas-utalca.app`.
-- El correo no se envía ni se muestra; Supabase solo lo usa como identificador de Auth.
+- Se mapea a un email interno determinista: `rut12345678@alumnos.utalca.cl`.
+  Ese correo no se envía ni se muestra; Supabase solo lo usa como identificador de Auth.
+  El dominio debe tener registros MX porque Supabase valida el correo al registrar.
 - El RUT se guarda en `profiles` y se muestra enmascarado en **Mi Cuenta**.
 
 ### Limitaciones actuales

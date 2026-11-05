@@ -28,7 +28,7 @@ assert.strictEqual(normalizeRut('abc123456'), null);
 assert.strictEqual(normalizeRut(''), null);
 assert.strictEqual(normalizeRut(null), null);
 
-assert.strictEqual(rutToSyntheticEmail('12.345.678'), 'rut12345678@notas-utalca.app');
+assert.strictEqual(rutToSyntheticEmail('12.345.678'), 'rut12345678@alumnos.utalca.cl');
 assert.strictEqual(
   rutToSyntheticEmail('12.345.678', 'example.com'),
   'rut12345678@example.com'

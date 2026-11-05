@@ -10,7 +10,7 @@
 })(typeof window !== 'undefined' ? window : globalThis, function () {
   const RUT_MIN = 6;
   const RUT_MAX = 8;
-  const EMAIL_DOMAIN = 'notas-utalca.app';
+  const EMAIL_DOMAIN = 'alumnos.utalca.cl';
 
   /**
    * Deja solo los dígitos del RUT, sin dígito verificador.

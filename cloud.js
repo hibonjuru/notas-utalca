@@ -10,7 +10,7 @@
   const DEMO_USERS_KEY = 'notas_demo_users_v1';
   const DEMO_SESSION_KEY = 'notas_demo_session_v1';
   const DEMO_STATE_PREFIX = 'notas_demo_state_v1:';
-  const DEMO_EMAIL_DOMAIN = 'notas-utalca.app';
+  const DEMO_EMAIL_DOMAIN = 'alumnos.utalca.cl';
 
   let client = null;
   let initError = null;

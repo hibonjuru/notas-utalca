@@ -10,5 +10,5 @@
 window.NOTAS_CLOUD_CONFIG = {
   url: 'https://wrensgwmmhhlkzuqzhtt.supabase.co',
   anonKey: 'sb_publishable_01KSGUipO5OvyPJtJt9wPA_uflUBFeA',
-  emailDomain: 'notas-utalca.app'
+  emailDomain: 'alumnos.utalca.cl'
 };
