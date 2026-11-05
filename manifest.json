@@ -1,0 +1,34 @@
+{
+  "name": "Notas Utalca · Promedios y Asistencia",
+  "short_name": "Notas Utalca",
+  "description": "Organizador de promedios, unidades exigibles y asistencia para estudiantes de la Universidad de Talca.",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#be0f20",
+  "orientation": "portrait-primary",
+  "lang": "es-CL",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
