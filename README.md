@@ -74,10 +74,18 @@ La `anon key` es pública por diseño. **Nunca** pongas la `service_role` en el 
 
 ## Publicar en GitHub Pages
 
-El repositorio aún no existe. Crear `notas-utalca` en GitHub y luego:
+El repositorio aún no existe en GitHub. La carpeta local ya está inicializada como
+repositorio Git con commits y el remoto configurado. Solo falta crear el repositorio
+remoto y hacer push:
 
 ```bash
 cd C:\Users\SexPC\Documents\Utalca\OrganizadorGitHub
+git push -u origin main
+```
+
+Si empiezas desde cero en otra copia:
+
+```bash
 git init -b main
 git add .
 git commit -m "feat: GitHub Pages + Supabase auth"
