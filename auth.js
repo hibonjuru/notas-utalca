@@ -190,6 +190,12 @@
     refreshModeUI();
     setMode('login');
 
+    if (!root.NotasCloud || !root.AuthUtils) {
+      showGate();
+      setError('No se pudieron cargar los módulos de cuentas. Revisa cloud.js y auth_utils.js.');
+      return null;
+    }
+
     try {
       await root.NotasCloud.init();
     } catch (error) {
