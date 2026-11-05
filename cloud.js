@@ -52,8 +52,8 @@
     const base = root.NOTAS_CLOUD_CONFIG || {};
     const stored = readJSON(CONFIG_KEY, null) || {};
     const config = {
-      url: String(stored.url || base.url || '').trim().replace(/\/+$/, ''),
-      anonKey: String(stored.anonKey || base.anonKey || '').trim(),
+      url: String(base.url || stored.url || '').trim().replace(/\/+$/, ''),
+      anonKey: String(base.anonKey || stored.anonKey || '').trim(),
       emailDomain: base.emailDomain || DEMO_EMAIL_DOMAIN
     };
     return isValidConfig(config) ? config : null;

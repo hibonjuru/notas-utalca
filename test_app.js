@@ -168,4 +168,47 @@ assert.strictEqual(u33Stats.isWeightValid, true);
 assert.strictEqual(u33Stats.gradedWeight, 33.3);
 assert.strictEqual(u33Stats.pendingWeight, 66.7);
 
+// 8. Ramo terminado bajo la nota mínima (sin unidad exigible reprobada)
+const completeFailed = computeCourseStats({
+  id: 'c-failed',
+  name: 'Ramo terminado reprobado',
+  passMark: 3.95,
+  units: [
+    {
+      id: 'u-failed',
+      name: 'Única',
+      weight: 100,
+      exigible: false,
+      evals: [{ id: 'e-failed', name: 'Evaluación', weight: 100, grade: 3.0 }]
+    }
+  ],
+  acumOpcional: { enabled: false, weight: 30, grade: null, date: '' },
+  attendance: { enabled: false, minPct: 80, attended: 0, held: 0, totalEstimated: null }
+});
+assert.strictEqual(completeFailed.isComplete, true);
+assert.strictEqual(completeFailed.effectiveFinalGrade, 3);
+assert.strictEqual(completeFailed.hasFailedExigibleUnit, false);
+assert.strictEqual(completeFailed.acumPending, false);
+
+// 9. Acumulativa pendiente: no marcar reprobado antes de rendirla
+const acumPending = computeCourseStats({
+  id: 'c-acum',
+  name: 'Ramo con acumulativa pendiente',
+  passMark: 3.95,
+  units: [
+    {
+      id: 'u-acum',
+      name: 'Única',
+      weight: 100,
+      exigible: true,
+      evals: [{ id: 'e-acum', name: 'Evaluación', weight: 100, grade: 3.5 }]
+    }
+  ],
+  acumOpcional: { enabled: true, weight: 30, grade: null, date: '' },
+  attendance: { enabled: false, minPct: 80, attended: 0, held: 0, totalEstimated: null }
+});
+assert.strictEqual(acumPending.isComplete, true);
+assert.strictEqual(acumPending.acumPending, true);
+assert.strictEqual(acumPending.neededInAcum, 5.0);
+
 console.log('✓ Todos los tests del motor chileno, unidades exigibles, acumulativa 70/30, asistencia, matching OCR y parser Utalca pasaron con éxito.');

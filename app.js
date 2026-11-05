@@ -365,6 +365,8 @@ function computeCourseStats(course) {
     neededInAcumExact2Dec,
     neededInAcumWithCurrentPointsOnly,
     finalWithAcum,
+    acumEnabled: Boolean(acum.enabled),
+    acumPending: Boolean(acum.enabled && acumGrade === null),
     effectiveFinalGrade:
       effectiveFinalGrade !== null ? Math.floor((effectiveFinalGrade + 1e-9) * 100) / 100 : null,
     attendanceStats
@@ -1574,7 +1576,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     allStats.forEach((s) => {
       const needRisk = s.effectiveNeeded !== null && s.effectiveNeeded > 5.5;
       const attRisk = s.attendanceStats.enabled && s.attendanceStats.isAtRisk;
-      if (needRisk || attRisk || s.hasFailedExigibleUnit) riskCount++;
+      const failedCourse =
+        s.isComplete &&
+        s.effectiveFinalGrade !== null &&
+        s.effectiveFinalGrade < s.passMark &&
+        !s.acumPending;
+      if (needRisk || attRisk || s.hasFailedExigibleUnit || failedCourse) riskCount++;
     });
 
     const elAvg = document.getElementById('summary-avg');
@@ -1745,7 +1752,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       .map((course) => {
         const st = computeCourseStats(course);
         const completedFailed =
-          st.isComplete && st.effectiveFinalGrade !== null && st.effectiveFinalGrade < st.passMark;
+          st.isComplete &&
+          st.effectiveFinalGrade !== null &&
+          st.effectiveFinalGrade < st.passMark &&
+          !st.acumPending;
         const mainDisplay = st.currentAvg !== null ? fmtGrade(st.currentAvg) : '—';
         const subTxt = st.hasFailedExigibleUnit
           ? 'Reprobado (Unidad Exigible)'
@@ -2515,7 +2525,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     let neededColor = 'var(--text)';
 
     const completedFailed =
-      st.isComplete && st.effectiveFinalGrade !== null && st.effectiveFinalGrade < st.passMark;
+      st.isComplete &&
+      st.effectiveFinalGrade !== null &&
+      st.effectiveFinalGrade < st.passMark &&
+      !st.acumPending;
 
     if (st.hasFailedExigibleUnit) {
       neededVal = 'Reprobado';
@@ -2527,6 +2540,18 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       neededVal = 'Reprobado';
       neededSub = `Ramo terminado bajo ${st.passMark}`;
       neededColor = 'var(--danger)';
+    } else if (st.isComplete && st.acumPending) {
+      neededVal =
+        st.neededInAcum !== null ? fmtGrade(Math.max(1, st.neededInAcum), 1) : '—';
+      neededSub = 'Nota necesaria en la Acumulativa';
+      neededColor =
+        st.neededInAcum === null
+          ? 'var(--text-muted)'
+          : st.neededInAcum <= st.passMark
+          ? 'var(--ok)'
+          : st.neededInAcum <= 6.0
+          ? 'var(--warn)'
+          : 'var(--danger)';
     } else if (st.effectiveNeeded !== null) {
       if (st.effectiveNeeded <= 1.0) {
         neededVal = '≤ 1.0';
