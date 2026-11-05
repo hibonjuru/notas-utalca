@@ -91,29 +91,6 @@
 
         <div id="auth-demo-banner" class="auth-demo" hidden>
           <strong>Modo demo local.</strong> Las cuentas y los ramos se guardan solo en este navegador.
-          Para cuentas reales, conecta Supabase.
-        </div>
-
-        <button type="button" id="auth-config-toggle" class="auth-link">Conectar con Supabase (cuentas reales)</button>
-
-        <div id="auth-config-panel" class="auth-config" hidden>
-          <p>
-            Pega la <strong>Project URL</strong> y la <strong>anon public key</strong> de tu proyecto Supabase.
-            La anon key es pública; nunca uses la service_role key aquí.
-          </p>
-          <div class="auth-field">
-            <label for="auth-config-url">Project URL</label>
-            <input id="auth-config-url" type="url" placeholder="https://xxxx.supabase.co" autocomplete="off" />
-          </div>
-          <div class="auth-field">
-            <label for="auth-config-key">Anon public key</label>
-            <textarea id="auth-config-key" rows="3" placeholder="eyJhbGciOi..." spellcheck="false"></textarea>
-          </div>
-          <div class="auth-config-actions">
-            <button type="button" id="auth-config-save" class="auth-submit">Guardar y conectar</button>
-            <button type="button" id="auth-config-demo" class="auth-link">Usar modo demo</button>
-          </div>
-          <div id="auth-config-status" class="auth-status" role="status" aria-live="polite"></div>
         </div>
 
         <p class="auth-note">
@@ -345,7 +322,7 @@
   <script src="auth_utils.js?v=2"></script>
   <script src="cloud-config.js?v=3"></script>
   <script src="cloud.js?v=3"></script>
-  <script src="auth.js?v=1"></script>
+  <script src="auth.js?v=2"></script>
   <script src="app.js?v=3"></script>
 </body>
 </html>

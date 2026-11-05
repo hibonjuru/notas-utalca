@@ -74,25 +74,9 @@
   function refreshModeUI() {
     const config = root.NotasCloud ? root.NotasCloud.getConfig() : null;
     const demoBanner = byId('auth-demo-banner');
-    const configToggle = byId('auth-config-toggle');
-    const configStatus = byId('auth-config-status');
-    const urlInput = byId('auth-config-url');
-    const keyInput = byId('auth-config-key');
     const modeLabel = byId('auth-mode-label');
 
     if (demoBanner) demoBanner.hidden = Boolean(config);
-    if (configToggle) {
-      configToggle.textContent = config
-        ? 'Configuración de Supabase'
-        : 'Conectar con Supabase (cuentas reales)';
-    }
-    if (configStatus) {
-      configStatus.textContent = config
-        ? `Conectado a ${config.url.replace(/^https?:\/\//, '')}`
-        : 'Sin Supabase: modo demo local.';
-    }
-    if (urlInput && config) urlInput.value = config.url;
-    if (keyInput && config) keyInput.value = config.anonKey;
     if (modeLabel) {
       modeLabel.textContent = config ? 'Cuenta en la nube' : 'Modo demo local';
     }
@@ -115,29 +99,6 @@
         button.textContent = showing ? 'Ver' : 'Ocultar';
         button.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
       }
-    });
-
-    byId('auth-config-toggle')?.addEventListener('click', () => {
-      const panel = byId('auth-config-panel');
-      if (panel) panel.hidden = !panel.hidden;
-    });
-
-    byId('auth-config-save')?.addEventListener('click', () => {
-      const url = byId('auth-config-url')?.value || '';
-      const key = byId('auth-config-key')?.value || '';
-      const status = byId('auth-config-status');
-      try {
-        root.NotasCloud.saveConfig(url, key);
-        if (status) status.textContent = 'Configuración guardada. Recargando…';
-        root.location.reload();
-      } catch (error) {
-        if (status) status.textContent = root.NotasCloud.friendlyError(error);
-      }
-    });
-
-    byId('auth-config-demo')?.addEventListener('click', () => {
-      root.NotasCloud.clearConfig();
-      root.location.reload();
     });
 
     byId('auth-form')?.addEventListener('submit', async (event) => {
@@ -201,8 +162,6 @@
     } catch (error) {
       showGate();
       setError(root.NotasCloud.friendlyError(error));
-      const panel = byId('auth-config-panel');
-      if (panel) panel.hidden = false;
       return null;
     }
 
