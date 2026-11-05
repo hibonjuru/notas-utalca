@@ -9,6 +9,7 @@ el proyecto original de Netlify (`..\Organizador`) **no fue modificado**.
 - Sesión persistente y cierre de sesión.
 - Datos por usuario en Supabase (JSONB) con **RLS**.
 - Caché local por usuario y guardado remoto con detección simple de conflictos.
+- Sincronización automática: Realtime de Supabase si está habilitado y polling cada 4 segundos como respaldo.
 - Respaldo manual: exportar/importar JSON.
 - Modo **demo local** para probar la app sin crear un proyecto Supabase.
 - Sin la vista de sincronización por QR/código; eso lo reemplaza la cuenta.
@@ -74,8 +75,23 @@ La `anon key` es pública por diseño. **Nunca** pongas la `service_role` en el 
   Si olvidas la contraseña, el administrador debe restablecerla desde Supabase.
 - No hay eliminación de cuenta desde la UI; sí “borrar todos mis ramos”.
 - No hay offline real. La app necesita internet para Supabase.
-- El estado se guarda completo como JSONB. Dos dispositivos que editan a la vez
-  pueden provocar un conflicto; se avisa, pero no se hace merge automático.
+- El estado se guarda completo como JSONB. Si dos dispositivos editan exactamente al mismo tiempo
+  puede aparecer un conflicto; se avisa y se puede recargar desde la nube. La app intenta aplicar
+  automáticamente los cambios remotos cuando no hay ediciones locales pendientes.
+
+### Sincronización automática
+
+La app escucha cambios de `user_state` y además consulta la nube cada 4 segundos. También
+sincroniza al volver a la app o al enfocar la ventana.
+
+Para que la actualización sea instantánea, habilita Realtime para la tabla. El bloque 7 de
+`supabase/schema.sql` ya lo hace; si ya ejecutaste el esquema antes, puedes correr solo:
+
+```sql
+alter publication supabase_realtime add table public.user_state;
+```
+
+Si no lo haces, igual funciona con polling cada 4 segundos.
 
 ## Publicar en GitHub Pages
 

@@ -109,6 +109,22 @@ grant usage on schema public to authenticated;
 grant select on public.profiles to authenticated;
 grant select, insert, update, delete on public.user_state to authenticated;
 
+-- 7. Realtime para sincronización instantánea entre dispositivos.
+--    Si no se ejecuta, la app igual sincroniza con polling cada 4 segundos.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'user_state'
+  ) then
+    alter publication supabase_realtime add table public.user_state;
+  end if;
+end;
+$$;
+
 -- ==========================================================================
 -- Checklist de configuración en Supabase:
 --

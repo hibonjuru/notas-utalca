@@ -1147,6 +1147,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   let remoteSaveTimer = null;
   let remoteSavePromise = null;
   let remoteDirty = false;
+  let remotePollTimer = null;
+  let remotePollInFlight = false;
+  let remoteUnsubscribe = null;
   let bannerTimer = null;
   let currentSection = 'home';
   let selectedCourseId = null;
@@ -1566,6 +1569,76 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       console.warn('Error importando respaldo:', error);
       window.alert('No se pudo leer el respaldo. Debe ser un JSON o un código sync válido.');
     }
+  }
+
+  function applyRemoteState(remote, message = 'Datos actualizados desde otro dispositivo.') {
+    if (!remote || !remote.state || !Array.isArray(remote.state.courses)) return false;
+
+    const version = Number(remote.version) || 0;
+    if (version <= stateVersion) return false;
+    if (remoteDirty || remoteSavePromise) return false;
+
+    const modal = document.getElementById('subdivide-modal');
+    if (modal && !modal.hidden) return false;
+
+    state = { courses: normalizeCourses(remote.state.courses) };
+    stateVersion = version;
+    remoteDirty = false;
+    writeLocalCache();
+    renderAll();
+    showCloudBanner(message, 'ok', 2500);
+    return true;
+  }
+
+  async function checkRemoteUpdates() {
+    if (!currentUser || !window.NotasCloud) return;
+    if (window.NotasCloud.getMode() !== 'supabase') return;
+    if (document.visibilityState === 'hidden') return;
+    if (remotePollInFlight || remoteDirty || remoteSavePromise) return;
+
+    remotePollInFlight = true;
+    try {
+      const remote = await window.NotasCloud.loadState(currentUser.id);
+      applyRemoteState(remote);
+    } catch (error) {
+      /* Sin conexión: el siguiente ciclo reintenta. */
+    } finally {
+      remotePollInFlight = false;
+    }
+  }
+
+  function handleRemoteVisibility() {
+    if (document.visibilityState === 'visible') checkRemoteUpdates();
+  }
+
+  function stopRemoteSync() {
+    if (remotePollTimer) {
+      clearInterval(remotePollTimer);
+      remotePollTimer = null;
+    }
+    if (remoteUnsubscribe) {
+      remoteUnsubscribe();
+      remoteUnsubscribe = null;
+    }
+    window.removeEventListener('focus', checkRemoteUpdates);
+    document.removeEventListener('visibilitychange', handleRemoteVisibility);
+  }
+
+  function startRemoteSync() {
+    stopRemoteSync();
+    if (!currentUser || !window.NotasCloud) return;
+    if (window.NotasCloud.getMode() !== 'supabase') return;
+
+    if (typeof window.NotasCloud.subscribeState === 'function') {
+      remoteUnsubscribe = window.NotasCloud.subscribeState(currentUser.id, (remote) => {
+        applyRemoteState(remote);
+      });
+    }
+
+    remotePollTimer = setInterval(checkRemoteUpdates, 4000);
+    window.addEventListener('focus', checkRemoteUpdates);
+    document.addEventListener('visibilitychange', handleRemoteVisibility);
+    setTimeout(checkRemoteUpdates, 1200);
   }
 
   function escapeHtml(str) {
@@ -3908,6 +3981,7 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
     await loadState();
     renderAll();
     setupEvents();
+    startRemoteSync();
 
     if (window.NotasCloud.getMode() === 'demo') {
       showCloudBanner(

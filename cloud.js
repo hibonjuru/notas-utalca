@@ -398,6 +398,45 @@
     client.auth.onAuthStateChange((event, session) => callback(event, session));
   }
 
+  function subscribeState(userId, callback) {
+    if (!client || typeof callback !== 'function') return () => {};
+    let channel = null;
+    try {
+      channel = client
+        .channel(`user_state:${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_state',
+            filter: `user_id=eq.${userId}`
+          },
+          (payload) => {
+            if (payload && payload.new) {
+              callback({
+                state: payload.new.state,
+                version: payload.new.version,
+                updatedAt: payload.new.updated_at
+              });
+            }
+          }
+        )
+        .subscribe();
+    } catch (error) {
+      console.warn('Realtime no disponible; se usará polling:', error);
+      return () => {};
+    }
+
+    return () => {
+      try {
+        if (channel) client.removeChannel(channel);
+      } catch (error) {
+        /* noop */
+      }
+    };
+  }
+
   root.NotasCloud = {
     init,
     getSession,
@@ -415,6 +454,7 @@
     clearConfig,
     getInitError,
     friendlyError,
-    onAuthChange
+    onAuthChange,
+    subscribeState
   };
 })(typeof window !== 'undefined' ? window : globalThis);
