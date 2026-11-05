@@ -133,7 +133,12 @@
 
   function syntheticEmail(rut) {
     if (root.AuthUtils && typeof root.AuthUtils.rutToSyntheticEmail === 'function') {
-      return root.AuthUtils.rutToSyntheticEmail(rut);
+      const config = getConfig();
+      const domain =
+        (config && config.emailDomain) ||
+        (root.NOTAS_CLOUD_CONFIG && root.NOTAS_CLOUD_CONFIG.emailDomain) ||
+        DEMO_EMAIL_DOMAIN;
+      return root.AuthUtils.rutToSyntheticEmail(rut, domain);
     }
     return `rut${rut}@${DEMO_EMAIL_DOMAIN}`;
   }

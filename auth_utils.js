@@ -33,10 +33,11 @@
    * Email interno determinista para Supabase Auth.
    * No se envía correo: el RUT sigue siendo el identificador visible.
    */
-  function rutToSyntheticEmail(rut) {
+  function rutToSyntheticEmail(rut, domain) {
     const normalized = normalizeRut(rut);
     if (!normalized) return null;
-    return `rut${normalized}@${EMAIL_DOMAIN}`;
+    const safeDomain = String(domain || EMAIL_DOMAIN).trim() || EMAIL_DOMAIN;
+    return `rut${normalized}@${safeDomain}`;
   }
 
   function maskRut(rut) {

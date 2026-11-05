@@ -29,6 +29,10 @@ assert.strictEqual(normalizeRut(''), null);
 assert.strictEqual(normalizeRut(null), null);
 
 assert.strictEqual(rutToSyntheticEmail('12.345.678'), 'rut12345678@notas-utalca.app');
+assert.strictEqual(
+  rutToSyntheticEmail('12.345.678', 'example.com'),
+  'rut12345678@example.com'
+);
 assert.strictEqual(rutToSyntheticEmail('12345'), null);
 assert.strictEqual(maskRut('12345678'), '•••••678');
 assert.strictEqual(validatePassword('1234567').ok, false);
