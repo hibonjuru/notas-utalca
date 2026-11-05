@@ -3866,7 +3866,7 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
       showCloudBanner(
         'Modo demo local: las cuentas y los ramos se guardan solo en este navegador.',
         'warn',
-        0
+        6000
       );
     }
   }
