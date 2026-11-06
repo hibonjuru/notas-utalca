@@ -143,6 +143,13 @@ node --check auth.js
 
 El workflow `.github/workflows/tests.yml` ejecuta lo mismo en cada push/PR.
 
+## Copia local de seguridad
+
+Además de la copia por usuario, la app guarda en el navegador la última versión
+que tenía ramos. Si borras todos tus ramos por error, en **Mi Cuenta** aparecerá
+**Restaurar copia de N ramos**. Esa copia vive solo en ese navegador; para mover
+datos entre dispositivos usa **Exportar respaldo JSON**.
+
 ## Tema claro y oscuro
 
 La app detecta el modo del dispositivo con `prefers-color-scheme` y además permite

@@ -1305,6 +1305,42 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     } catch (error) {
       console.warn('No se pudo guardar la copia local:', error);
     }
+    writeBackupSnapshot();
+  }
+
+  const BACKUP_SUFFIX = ':backup-v1';
+
+  function getBackupKey() {
+    return currentUser ? `${getUserCacheKey()}${BACKUP_SUFFIX}` : '';
+  }
+
+  function readBackup() {
+    if (!currentUser) return null;
+    const backup = readLocalJSON(getBackupKey());
+    if (!backup || !Array.isArray(backup.courses) || backup.courses.length === 0) return null;
+    return backup;
+  }
+
+  // Guarda la última versión con ramos. Nunca se sobrescribe con una copia
+  // que tenga menos ramos, para que borrar por error no destruya el respaldo.
+  function writeBackupSnapshot() {
+    if (!currentUser) return;
+    if (!Array.isArray(state.courses) || state.courses.length === 0) return;
+
+    const existing = readBackup();
+    if (existing && existing.courses.length > state.courses.length) return;
+
+    try {
+      localStorage.setItem(
+        getBackupKey(),
+        JSON.stringify({
+          courses: state.courses,
+          savedAt: new Date().toISOString()
+        })
+      );
+    } catch (error) {
+      console.warn('No se pudo guardar la copia de seguridad local:', error);
+    }
   }
 
   function normalizeSubEvals(list) {
@@ -2582,6 +2618,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     const rut = currentUser?.rut || '';
     const maskedRut = window.AuthUtils ? window.AuthUtils.maskRut(rut) : '—';
     const themePreference = window.NotasTheme ? window.NotasTheme.getPreference() : 'system';
+    const backup = readBackup();
+    const canRestoreBackup = Boolean(backup && backup.courses.length > state.courses.length);
+    const backupDate =
+      backup && backup.savedAt && !Number.isNaN(new Date(backup.savedAt).getTime())
+        ? new Date(backup.savedAt).toLocaleString('es-CL')
+        : 'fecha desconocida';
 
     return `
       <div class="section-nav-header">
@@ -2631,6 +2673,20 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         </div>
         <p class="account-help">Automático sigue el modo claro u oscuro configurado en el dispositivo.</p>
       </div>
+
+      ${
+        canRestoreBackup
+          ? `<div class="account-section">
+              <h3 class="account-section-title">Copia de seguridad local</h3>
+              <p class="account-help">
+                Hay una copia de <strong>${backup.courses.length} ramos</strong> guardada el ${escapeHtml(backupDate)}.
+              </p>
+              <button type="button" class="btn btn-sm" data-action="restore-backup">
+                Restaurar copia de ${backup.courses.length} ramos
+              </button>
+            </div>`
+          : ''
+      }
 
       <div class="account-actions">
         <button type="button" class="btn" data-action="export-data">Exportar respaldo JSON</button>
@@ -3931,6 +3987,31 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
             saveState();
             renderAll();
             showCloudBanner('Ramos eliminados.', 'ok', 2000);
+          }
+          break;
+        }
+
+        case 'restore-backup': {
+          const backup = readBackup();
+          if (!backup) {
+            showCloudBanner('No hay copia local disponible.', 'warn', 3000);
+            break;
+          }
+          const when =
+            backup.savedAt && !Number.isNaN(new Date(backup.savedAt).getTime())
+              ? new Date(backup.savedAt).toLocaleString('es-CL')
+              : 'fecha desconocida';
+          if (
+            confirm(
+              `¿Restaurar la copia local de ${backup.courses.length} ramos del ${when}?\n` +
+                `Se reemplazarán tus ${state.courses.length} ramos actuales.`
+            )
+          ) {
+            state = { courses: normalizeCourses(backup.courses) };
+            remoteDirty = true;
+            saveState(true);
+            renderAll();
+            showCloudBanner('Copia local restaurada.', 'ok', 3000);
           }
           break;
         }
