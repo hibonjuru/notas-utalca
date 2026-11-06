@@ -1168,6 +1168,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   let bannerTimer = null;
   let currentSection = 'home';
   let lastRenderedViewKey = '';
+  let viewAnimationTimer = null;
   let selectedCourseId = null;
   let pendingImportCourse = null;
   let isDeleteModePromedios = false;
@@ -1833,6 +1834,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       container.classList.remove('view-enter');
       void container.offsetWidth;
       container.classList.add('view-enter');
+      if (viewAnimationTimer) clearTimeout(viewAnimationTimer);
+      viewAnimationTimer = setTimeout(() => {
+        viewAnimationTimer = null;
+        container.classList.remove('view-enter');
+      }, 320);
     }
   }
 

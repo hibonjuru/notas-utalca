@@ -2312,7 +2312,7 @@ body {
 
 /* Transiciones suaves entre vistas y entrada del login */
 #main-view-container.view-enter {
-  animation: viewEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: viewEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes viewEnter {
@@ -2327,16 +2327,14 @@ body {
 }
 
 .auth-card {
-  animation: authCardEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: authCardEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes authCardEnter {
   from {
-    opacity: 0;
     transform: translateY(8px) scale(0.995);
   }
   to {
-    opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
