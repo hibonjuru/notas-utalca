@@ -427,6 +427,20 @@ function computeAttendanceStats(att) {
   };
 }
 
+/**
+ * Nota actual visible: la ponderada acumulada, no el promedio de lo evaluado.
+ * - Ramo completo: nota final (incluye acumulativa si corresponde).
+ * - Ramo parcial: puntos ponderados sobre 7 según el % ya evaluado.
+ * - Sin evaluaciones con nota: null (se muestra como "—").
+ */
+function displayCurrentGrade(stats) {
+  if (!stats) return null;
+  if (stats.isComplete && stats.effectiveFinalGrade !== null && stats.effectiveFinalGrade !== undefined) {
+    return stats.effectiveFinalGrade;
+  }
+  return stats.globalGradedWeight > 0 ? stats.globalPoints : null;
+}
+
 /* ==========================================================================
    Parser Inteligente de Tablas Utalca (Copy-Paste + OCR de Pantallazos)
    Ignora fechas corruptas por OCR para no confundirlas jamás con %
@@ -1692,7 +1706,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
   function renderSidebarAndNav() {
     const allStats = state.courses.map((c) => computeCourseStats(c));
-    const gradedCourses = allStats.filter((s) => s.effectiveFinalGrade !== null);
+    const gradedCourses = allStats.filter(
+      (s) => s.isComplete && s.effectiveFinalGrade !== null
+    );
     const semAvg =
       gradedCourses.length > 0
         ? gradedCourses.reduce((acc, s) => acc + s.effectiveFinalGrade, 0) / gradedCourses.length
@@ -1882,12 +1898,14 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
           st.effectiveFinalGrade !== null &&
           st.effectiveFinalGrade < st.passMark &&
           !st.acumPending;
-        const mainDisplay = st.currentAvg !== null ? fmtGrade(st.currentAvg) : '—';
-        const subTxt = st.hasFailedExigibleUnit
+        const currentGrade = displayCurrentGrade(st);
+        const mainDisplay = currentGrade !== null ? fmtPoints(currentGrade) : '—';
+        const statusTxt = st.hasFailedExigibleUnit
           ? 'Reprobado (Unidad Exigible)'
           : completedFailed
           ? 'Reprobado'
           : neededText(st.effectiveNeeded);
+        const subTxt = `${st.globalGradedWeight}% evaluado · ${statusTxt}`;
         const statColor =
           st.hasFailedExigibleUnit || completedFailed ? 'style="color:var(--danger);"' : '';
 
@@ -2622,13 +2640,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   }
 
   function renderUnitSummaryPills(uSt, passMark) {
-    const unitAvg = uSt.currentAvg !== null ? uSt.currentAvg : null;
     const ptsTxt =
-      unitAvg !== null
-        ? `Nota: <strong>${fmtGrade(unitAvg, 2)}</strong> <span style="color:var(--text-muted);font-size:0.7rem;">(${fmtPoints(
-            uSt.points
-          )} pts)</span>`
-        : `Puntos: <strong>${fmtPoints(uSt.points)}</strong>`;
+      uSt.gradedWeight > 0
+        ? `Ponderado: <strong>${fmtPoints(uSt.points)}</strong>`
+        : `Ponderado: <strong>—</strong>`;
     let needBadge = '';
     if (uSt.neededUniform !== null) {
       const cls = neededBadgeClass(uSt.neededUniform, passMark);
@@ -2641,7 +2656,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       needBadge = `<span class="badge ${cls}">${label}</span>`;
     } else {
       const cls = uSt.points >= passMark ? 'badge-ok' : 'badge-danger';
-      needBadge = `<span class="badge ${cls}">Nota Unidad: ${fmtGrade(uSt.points, 2)}</span>`;
+      needBadge = `<span class="badge ${cls}">Nota Unidad: ${fmtPoints(uSt.points)}</span>`;
     }
     return `<span>${ptsTxt}</span> ${needBadge}`;
   }
@@ -2702,24 +2717,23 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       }
     }
 
-    const displayAvg = st.currentAvg !== null ? st.currentAvg : null;
-    const ptsColor = st.hasFailedExigibleUnit || completedFailed
-      ? 'var(--danger)'
-      : displayAvg === null
-      ? 'var(--text-muted)'
-      : displayAvg >= st.passMark
-      ? 'var(--ok)'
-      : 'var(--text)';
+    const displayGrade = displayCurrentGrade(st);
+    const ptsColor =
+      st.hasFailedExigibleUnit || completedFailed
+        ? 'var(--danger)'
+        : displayGrade === null
+        ? 'var(--text-muted)'
+        : displayGrade >= st.passMark
+        ? 'var(--ok)'
+        : 'var(--text)';
 
     return `
       <div class="kpi-item">
         <span class="kpi-label">Nota Actual</span>
         <span class="kpi-val" style="color:${ptsColor}">${
-          displayAvg !== null ? fmtGrade(displayAvg, 2) : '—'
+          displayGrade !== null ? fmtPoints(displayGrade) : '—'
         }</span>
-        <span class="kpi-note">Meta: ${st.passMark} (${st.globalGradedWeight}% evaluado) · ${fmtPoints(
-      st.globalPoints
-    )} pts</span>
+        <span class="kpi-note">Meta: ${st.passMark} · ${st.globalGradedWeight}% evaluado · ponderada</span>
       </div>
       <div class="kpi-item">
         <span class="kpi-label">Nota Necesaria</span>
@@ -2733,7 +2747,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     const acum = course.acumOpcional;
     const g = normalizeGrade(acum.grade);
     const needNow = st.neededInAcum;
-    const needWithPoints = st.neededInAcumWithCurrentPointsOnly;
 
     let msg = '';
     if (g !== null && st.finalWithAcum !== null) {
@@ -2741,16 +2754,16 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       msg = `Nota Final (70% Presentación + 30% Acumulativa): <strong style="color:${
         ok ? 'var(--ok)' : 'var(--danger)'
       }">${fmtGrade(st.finalWithAcum)}</strong>`;
+    } else if (!st.isComplete) {
+      msg = 'La nota de la Acumulativa se calculará cuando termines las evaluaciones de presentación.';
     } else if (needNow !== null) {
-      msg = `Con tu promedio actual (${fmtGrade(
-        st.currentAvg
-      )} = 70%), necesitas un <strong>${fmtGrade(
+      msg = `Con la presentación terminada en <strong>${fmtPoints(
+        st.globalPoints
+      )}</strong>, necesitas un <strong>${fmtGrade(
         Math.max(1.0, needNow)
-      )}</strong> en la Acumulativa (30%) para aprobar con ${st.passMark}.`;
+      )}</strong> en la Acumulativa (${acum.weight}%) para aprobar con ${st.passMark}.`;
     } else {
-      msg = `El 100% del ramo pondera <strong>70%</strong> y este Examen Acumulativo vale <strong>${acum.weight}%</strong> (solo con los puntos actuales necesitarías <strong>${fmtGrade(
-        Math.max(1.0, needWithPoints)
-      )}</strong>).`;
+      msg = `El 100% del ramo pondera <strong>70%</strong> y este Examen Acumulativo vale <strong>${acum.weight}%</strong>.`;
     }
 
     return `
@@ -4022,6 +4035,7 @@ if (typeof module !== 'undefined' && module.exports) {
     computeUnitStats,
     computeCourseStats,
     computeAttendanceStats,
+    displayCurrentGrade,
     UtalcaParser,
     getDefaultCourses,
     findBestMatchingCourse,

@@ -4,6 +4,7 @@ const {
   computeUnitStats,
   computeCourseStats,
   computeAttendanceStats,
+  displayCurrentGrade,
   UtalcaParser,
   getDefaultCourses,
   findBestMatchingCourse,
@@ -72,6 +73,8 @@ assert.strictEqual(stats1.globalPendingWeight, 90);
 // (3.95 - 0.65) / 0.90 = 3.6666... -> 3.7 en escala chilena 1 dec y 3.67 exacto
 assert.strictEqual(stats1.effectiveNeeded, 3.7);
 assert.strictEqual(stats1.effectiveNeededExact2Dec, 3.67);
+assert.strictEqual(stats1.currentAvg, 6.5);
+assert.strictEqual(displayCurrentGrade(stats1), 0.65);
 
 // 3. Test Parser en Pantallazo 2 (Fundamentos de Psicoterapia I: 2 Unidades EXIGIBLE + Acum.Opcional + Asistencia)
 const rawPsicoterapia = `
@@ -139,6 +142,14 @@ assert.strictEqual(att100Fail.mustAttendNext, null); // No se puede recuperar 10
 
 // 6. Test findBestMatchingCourse y extractAttendanceData
 const defaultCourses = getDefaultCourses();
+const cosmoStats = computeCourseStats(defaultCourses.find((c) => c.id === 'ramo-cosmovisiones'));
+assert.strictEqual(cosmoStats.globalGradedWeight, 30);
+assert.strictEqual(cosmoStats.globalPoints, 1.83);
+assert.strictEqual(cosmoStats.currentAvg, 6.1);
+assert.strictEqual(displayCurrentGrade(cosmoStats), 1.83);
+const emptyStats = computeCourseStats(defaultCourses.find((c) => c.id === 'ramo-comunitaria'));
+assert.strictEqual(emptyStats.globalGradedWeight, 0);
+assert.strictEqual(displayCurrentGrade(emptyStats), null);
 const matchPsi = findBestMatchingCourse('Constancia de Asistencia Psicoterapia Conductual', defaultCourses);
 assert.strictEqual(matchPsi !== null, true);
 
@@ -193,6 +204,7 @@ assert.strictEqual(completeFailed.isComplete, true);
 assert.strictEqual(completeFailed.effectiveFinalGrade, 3);
 assert.strictEqual(completeFailed.hasFailedExigibleUnit, false);
 assert.strictEqual(completeFailed.acumPending, false);
+assert.strictEqual(displayCurrentGrade(completeFailed), 3);
 
 // 9. Acumulativa pendiente: no marcar reprobado antes de rendirla
 const acumPending = computeCourseStats({
