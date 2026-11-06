@@ -1537,11 +1537,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         .then((result) => {
           if (result && result.conflict) {
             setSyncStatus('error');
-            showCloudBanner(
-              'Hay cambios guardados en otro dispositivo. Recarga para revisar la versión más reciente.',
-              'warn',
-              0
-            );
             return;
           }
           if (result && typeof result.version === 'number') {

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#be0f20" />
+  <title>Recuperar datos · Notas Utalca</title>
+  <style>
+    :root {
+      --red: #be0f20;
+      --bg: #f5f6f8;
+      --surface: #ffffff;
+      --border: #eceef2;
+      --text: #18181b;
+      --text-soft: #52525b;
+      --text-muted: #6b7280;
+      --ok: #15803d;
+      --warn: #b45309;
+      --warn-soft: #fffbeb;
+      --warn-border: #fde68a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 1.25rem 1rem 3rem;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+    }
+    main { max-width: 720px; margin: 0 auto; }
+    h1 { margin: 0 0 0.35rem; font-size: 1.35rem; }
+    h2 { margin: 0 0 0.5rem; font-size: 0.95rem; color: var(--red); }
+    p { margin: 0 0 0.75rem; }
+    .sub { color: var(--text-muted); font-size: 0.85rem; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin: 0 0 0.9rem;
+    }
+    .warn {
+      background: var(--warn-soft);
+      border: 1px solid var(--warn-border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin: 0 0 1rem;
+      color: var(--warn);
+      font-size: 0.9rem;
+    }
+    .warn strong { display: block; margin-bottom: 0.2rem; }
+    .meta { color: var(--text-soft); font-size: 0.8rem; word-break: break-all; }
+    .courses { margin: 0.55rem 0 0.85rem; padding-left: 1.15rem; font-size: 0.88rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    button {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 0.45rem 0.7rem;
+      font: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    button.primary { background: var(--red); border-color: var(--red); color: #fff; }
+    .ok { color: var(--ok); font-weight: 600; }
+    .empty { color: var(--text-muted); font-size: 0.88rem; }
+    .hint { color: var(--text-soft); font-size: 0.85rem; }
+    ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+    code { background: rgba(0,0,0,0.05); padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Recuperar datos</h1>
+    <p class="sub">Esta página solo lee las copias guardadas en este navegador. No se conecta a Supabase, no inicia sesión y no modifica nada.</p>
+
+    <div class="warn">
+      <strong>Importante</strong>
+      Si aparece una copia con tus ramos, descárgala antes de abrir la app principal en este dispositivo. Abrir la app puede reemplazar esa copia por la versión actual de la nube.
+    </div>
+
+    <div id="results"></div>
+
+    <div class="card">
+      <h2>¿No aparece nada?</h2>
+      <p class="hint">Prueba esta misma página en cada dispositivo y navegador donde hayas usado la app: celular, PC, modo incógnito, etc.</p>
+      <p class="hint">Si usabas la app antigua (Netlify o <code>http://IP:8080</code>), ábrela en su dirección original y usa <strong>Respaldo de Datos → Exportar JSON</strong>. Esa copia vive en otro origen y no se puede leer desde aquí.</p>
+      <p class="hint">Si ya descargaste un respaldo antes, búscalo en tu carpeta de Descargas como un archivo <code>.json</code>.</p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const results = document.getElementById('results');
+
+      function readStores() {
+        const entries = [];
+        const stores = [
+          { name: 'localStorage', store: window.localStorage },
+          { name: 'sessionStorage', store: window.sessionStorage }
+        ];
+
+        stores.forEach(({ name, store }) => {
+          let keys = [];
+          try {
+            keys = Object.keys(store);
+          } catch (error) {
+            return;
+          }
+          keys.forEach((key) => {
+            if (!/^(utalca_organizador_v\d|notas_demo_state_v1)/.test(key)) return;
+            let raw = null;
+            try {
+              raw = store.getItem(key);
+            } catch (error) {
+              return;
+            }
+            entries.push({ area: name, key, raw });
+          });
+        });
+
+        return entries;
+      }
+
+      function extractCourses(raw) {
+        if (!raw) return null;
+        let parsed = null;
+        try {
+          parsed = JSON.parse(raw);
+        } catch (error) {
+          return null;
+        }
+        if (!parsed || typeof parsed !== 'object') return null;
+
+        const list = Array.isArray(parsed.courses)
+          ? parsed.courses
+          : parsed.state && Array.isArray(parsed.state.courses)
+          ? parsed.state.courses
+          : null;
+
+        if (!list) return null;
+
+        return {
+          courses: list,
+          savedAt: parsed.savedAt || parsed.updatedAt || null,
+          version: parsed.__version ?? parsed.version ?? null,
+          dirty: parsed.dirty ?? null
+        };
+      }
+
+      function formatDate(value) {
+        if (!value) return 'fecha desconocida';
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? 'fecha desconocida' : date.toLocaleString('es-CL');
+      }
+
+      function download(courses, key) {
+        const payload = JSON.stringify({ courses }, null, 2);
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const safeKey = key.replace(/[^a-z0-9_-]+/gi, '-').slice(0, 40);
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        link.href = url;
+        link.download = 'respaldo-notas-utalca-' + safeKey + '-' + stamp + '.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+
+      function renderCard(entry, data, index) {
+        const card = document.createElement('section');
+        card.className = 'card';
+
+        const title = document.createElement('h2');
+        title.textContent = 'Copia con ' + data.courses.length + ' ramo' + (data.courses.length === 1 ? '' : 's');
+        card.appendChild(title);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = entry.area + ' · ' + entry.key + ' · ' + formatDate(data.savedAt) + (data.version !== null ? ' · versión ' + data.version : '');
+        card.appendChild(meta);
+
+        if (data.dirty === true) {
+          const pending = document.createElement('p');
+          pending.className = 'meta';
+          pending.textContent = 'Esta copia tenía cambios pendientes de sincronizar.';
+          card.appendChild(pending);
+        }
+
+        const list = document.createElement('ul');
+        list.className = 'courses';
+        data.courses.slice(0, 15).forEach((course) => {
+          const item = document.createElement('li');
+          item.textContent = (course && course.name) || 'Ramo sin nombre';
+          list.appendChild(item);
+        });
+        if (data.courses.length > 15) {
+          const more = document.createElement('li');
+          more.textContent = 'y ' + (data.courses.length - 15) + ' más…';
+          list.appendChild(more);
+        }
+        card.appendChild(list);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const downloadButton = document.createElement('button');
+        downloadButton.className = 'primary';
+        downloadButton.textContent = 'Descargar respaldo JSON';
+        downloadButton.addEventListener('click', () => download(data.courses, entry.key + '-' + index));
+        actions.appendChild(downloadButton);
+
+        const copyButton = document.createElement('button');
+        copyButton.textContent = 'Copiar JSON';
+        copyButton.addEventListener('click', async () => {
+          const text = JSON.stringify({ courses: data.courses }, null, 2);
+          try {
+            await navigator.clipboard.writeText(text);
+            copyButton.textContent = 'Copiado';
+            setTimeout(() => { copyButton.textContent = 'Copiar JSON'; }, 2000);
+          } catch (error) {
+            window.prompt('Copia este JSON:', text);
+          }
+        });
+        actions.appendChild(copyButton);
+
+        card.appendChild(actions);
+        return card;
+      }
+
+      const entries = readStores();
+      const withCourses = [];
+      const empty = [];
+
+      entries.forEach((entry) => {
+        const data = extractCourses(entry.raw);
+        if (data && data.courses.length > 0) withCourses.push({ entry, data });
+        else empty.push(entry);
+      });
+
+      if (withCourses.length > 0) {
+        const ok = document.createElement('p');
+        ok.className = 'ok';
+        ok.textContent = 'Se encontraron ' + withCourses.length + ' copia' + (withCourses.length === 1 ? '' : 's') + ' con ramos en este navegador.';
+        results.appendChild(ok);
+        withCourses.forEach(({ entry, data }, index) => {
+          results.appendChild(renderCard(entry, data, index));
+        });
+      } else {
+        const emptyCard = document.createElement('section');
+        emptyCard.className = 'card';
+        const title = document.createElement('h2');
+        title.textContent = 'No se encontraron ramos en este navegador';
+        emptyCard.appendChild(title);
+        const text = document.createElement('p');
+        text.className = 'empty';
+        text.textContent = entries.length
+          ? 'Hay copias guardadas, pero están vacías (0 ramos).'
+          : 'No hay copias de la app en este navegador.';
+        emptyCard.appendChild(text);
+        results.appendChild(emptyCard);
+      }
+    })();
+  </script>
+</body>
+</html>

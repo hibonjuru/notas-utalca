@@ -150,6 +150,9 @@ que tenía ramos. Si borras todos tus ramos por error, en **Mi Cuenta** aparecer
 **Restaurar copia de N ramos**. Esa copia vive solo en ese navegador; para mover
 datos entre dispositivos usa **Exportar respaldo JSON**.
 
+La página `recuperar.html` permite revisar y descargar las copias locales de un
+navegador sin iniciar sesión ni modificar nada.
+
 ## Tema claro y oscuro
 
 La app detecta el modo del dispositivo con `prefers-color-scheme` y además permite
