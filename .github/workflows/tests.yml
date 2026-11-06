@@ -28,3 +28,4 @@ jobs:
           node --check auth_utils.js
           node --check cloud.js
           node --check auth.js
+          node --check theme.js

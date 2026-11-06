@@ -143,6 +143,16 @@ node --check auth.js
 
 El workflow `.github/workflows/tests.yml` ejecuta lo mismo en cada push/PR.
 
+## Tema claro y oscuro
+
+La app detecta el modo del dispositivo con `prefers-color-scheme` y además permite
+elegir **Automático / Claro / Oscuro** en **Mi Cuenta**. La preferencia se guarda
+solo en ese navegador.
+
+- `theme.js` se carga antes del CSS para evitar el destello claro/oscuro.
+- La preferencia no se sincroniza con Supabase.
+- La tipografía no cambia entre temas.
+
 ## Seguridad
 
 - RLS activo en `profiles` y `user_state`.
@@ -159,6 +169,7 @@ El workflow `.github/workflows/tests.yml` ejecuta lo mismo en cada push/PR.
 index.html                 pantalla de login + app
 styles.css                 estilos de login, cuenta y app
 app.js                     motor de cálculo + UI
+theme.js                   detección y selector de tema
 auth_utils.js              normalización de RUT y contraseña
 cloud.js                   adaptador Supabase / demo
 cloud-config.js            URL y anon key públicas

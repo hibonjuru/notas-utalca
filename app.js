@@ -2581,6 +2581,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     const modeLabel = window.NotasCloud ? window.NotasCloud.getModeLabel() : 'Sesión local';
     const rut = currentUser?.rut || '';
     const maskedRut = window.AuthUtils ? window.AuthUtils.maskRut(rut) : '—';
+    const themePreference = window.NotasTheme ? window.NotasTheme.getPreference() : 'system';
 
     return `
       <div class="section-nav-header">
@@ -2610,10 +2611,26 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         mode === 'demo'
           ? `<div class="account-warning">
               <strong>Modo demo local.</strong> Las cuentas y los ramos se guardan solo en este navegador.
-              Para cuentas reales, cierra sesión y pulsa <strong>Conectar con Supabase</strong> en la pantalla de inicio.
+              Para cuentas reales, pide al administrador que configure Supabase.
             </div>`
           : `<div class="account-ok">Conectado a Supabase. Tus datos se guardan en la nube y se sincronizan entre dispositivos.</div>`
       }
+
+      <div class="account-section">
+        <h3 class="account-section-title">Apariencia</h3>
+        <div class="theme-options" role="group" aria-label="Tema de la aplicación">
+          <button type="button" class="btn btn-sm theme-option ${
+            themePreference === 'system' ? 'active' : ''
+          }" data-action="set-theme" data-theme-pref="system">Automático</button>
+          <button type="button" class="btn btn-sm theme-option ${
+            themePreference === 'light' ? 'active' : ''
+          }" data-action="set-theme" data-theme-pref="light">Claro</button>
+          <button type="button" class="btn btn-sm theme-option ${
+            themePreference === 'dark' ? 'active' : ''
+          }" data-action="set-theme" data-theme-pref="dark">Oscuro</button>
+        </div>
+        <p class="account-help">Automático sigue el modo claro u oscuro configurado en el dispositivo.</p>
+      </div>
 
       <div class="account-actions">
         <button type="button" class="btn" data-action="export-data">Exportar respaldo JSON</button>
@@ -3905,6 +3922,14 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
           if (confirm('¿Cerrar sesión en este dispositivo?')) {
             await window.NotasAuth.logout();
           }
+          break;
+        }
+
+        case 'set-theme': {
+          if (window.NotasTheme) {
+            window.NotasTheme.setPreference(btn.dataset.themePref || 'system');
+          }
+          renderAll();
           break;
         }
 
