@@ -1026,6 +1026,17 @@ body {
   outline: none;
 }
 
+.sample-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.sample-label-short {
+  display: none;
+}
+
 .paste-textarea:focus {
   border-color: var(--red);
 }
@@ -1142,6 +1153,32 @@ body {
   .paste-textarea,
   .text-input {
     font-size: 16px; /* Evita auto-zoom en Safari iOS al tocar inputs */
+  }
+
+  .paste-textarea {
+    min-height: 92px;
+  }
+
+  .paste-textarea::placeholder {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .sample-actions {
+    gap: 0.4rem;
+  }
+
+  .sample-actions .btn {
+    padding: 0.22rem 0.58rem;
+    font-size: 0.72rem;
+  }
+
+  .sample-label-long {
+    display: none;
+  }
+
+  .sample-label-short {
+    display: inline;
   }
 
   .sub-evals-container {
@@ -2260,10 +2297,10 @@ body {
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --red: #ff8a96;
+  --red: #ff4d5e;
   --red-dark: #a91225;
-  --red-soft: rgba(255, 138, 150, 0.12);
-  --red-border: rgba(255, 138, 150, 0.3);
+  --red-soft: rgba(255, 77, 94, 0.12);
+  --red-border: rgba(255, 77, 94, 0.3);
   --red-fill: #c9182f;
   --red-fill-hover: #a91225;
 
@@ -2288,15 +2325,15 @@ body {
   --warn-soft: rgba(255, 209, 102, 0.1);
   --warn-border: rgba(255, 209, 102, 0.28);
   --warn-text: #ffd166;
-  --danger: #ff7a86;
-  --danger-soft: rgba(255, 122, 134, 0.1);
-  --danger-border: rgba(255, 122, 134, 0.28);
+  --danger: #ff6170;
+  --danger-soft: rgba(255, 97, 112, 0.1);
+  --danger-border: rgba(255, 97, 112, 0.28);
 
   --nav-bg: rgba(14, 17, 22, 0.96);
   --backdrop: rgba(0, 0, 0, 0.68);
   --on-accent: #ffffff;
   --auth-bg:
-    radial-gradient(circle at 15% 0%, rgba(255, 138, 150, 0.08), transparent 42%),
+    radial-gradient(circle at 15% 0%, rgba(255, 77, 94, 0.08), transparent 42%),
     linear-gradient(180deg, #12161d 0%, #0e1116 55%, #0b0e13 100%);
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.45);

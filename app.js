@@ -2590,12 +2590,18 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         placeholder="Pega aquí las filas de la intranet o escribe ej:&#10;Informe 25%&#10;Laboratorio 10% 6.5&#10;Presentación 35%"
       ></textarea>
 
-      <div style="display:flex; gap:0.45rem; flex-wrap:wrap; margin-top:0.65rem;">
-        <button type="button" class="btn btn-sm" data-action="load-sample-1">
-          Cargar Ejemplo 1 (Módulo I: Investigación)
+      <div class="sample-actions">
+        <button type="button" class="btn btn-sm" data-action="load-sample-1"
+          title="Cargar Ejemplo 1 (Módulo I: Investigación)"
+          aria-label="Cargar Ejemplo 1: Módulo I, Investigación">
+          <span class="sample-label-long">Cargar Ejemplo 1 (Módulo I: Investigación)</span>
+          <span class="sample-label-short">Ejemplo 1</span>
         </button>
-        <button type="button" class="btn btn-sm" data-action="load-sample-2">
-          Cargar Ejemplo 2 (Fundamentos de Psicoterapia I)
+        <button type="button" class="btn btn-sm" data-action="load-sample-2"
+          title="Cargar Ejemplo 2 (Fundamentos de Psicoterapia I)"
+          aria-label="Cargar Ejemplo 2: Fundamentos de Psicoterapia I">
+          <span class="sample-label-long">Cargar Ejemplo 2 (Fundamentos de Psicoterapia I)</span>
+          <span class="sample-label-short">Ejemplo 2</span>
         </button>
       </div>
 
