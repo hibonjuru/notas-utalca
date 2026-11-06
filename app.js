@@ -2587,7 +2587,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
       <textarea
         id="import-textarea"
         class="paste-textarea"
-        placeholder="Pega aquí las filas de la intranet o escribe ej:&#10;Informe 25%&#10;Laboratorio 10% 6.5&#10;Presentación 35%"
+        placeholder="Pega las filas de la intranet:&#10;Informe 25%&#10;Laboratorio 10% 6.5&#10;Presentación 35%"
       ></textarea>
 
       <div class="sample-actions">
