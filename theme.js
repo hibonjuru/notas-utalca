@@ -34,6 +34,29 @@
 
     const meta = root.document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', theme === 'dark' ? '#0e1116' : '#be0f20');
+
+    updateControls();
+  }
+
+  function getTheme() {
+    return documentElement.dataset.theme || resolve(getPreference());
+  }
+
+  function updateControls() {
+    const preference = getPreference();
+    const isDark = getTheme() === 'dark';
+
+    root.document.querySelectorAll('[data-action="set-theme"]').forEach((button) => {
+      const active = button.dataset.themePref === preference;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    root.document.querySelectorAll('[data-action="toggle-theme"]').forEach((button) => {
+      const label = isDark ? 'Activar modo claro' : 'Activar modo oscuro';
+      button.setAttribute('aria-label', label);
+      button.title = label;
+    });
   }
 
   apply(getPreference());
@@ -53,6 +76,10 @@
     );
   }
 
+  function toggle() {
+    setPreference(getTheme() === 'dark' ? 'light' : 'dark');
+  }
+
   function handleSystemChange() {
     if (getPreference() === 'system') apply('system');
   }
@@ -65,9 +92,34 @@
     }
   }
 
+  root.document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+
+    const setButton = target.closest('[data-action="set-theme"]');
+    if (setButton) {
+      event.preventDefault();
+      setPreference(setButton.dataset.themePref);
+      return;
+    }
+
+    const toggleButton = target.closest('[data-action="toggle-theme"]');
+    if (toggleButton) {
+      event.preventDefault();
+      toggle();
+    }
+  });
+
+  if (root.document.readyState === 'loading') {
+    root.document.addEventListener('DOMContentLoaded', updateControls);
+  } else {
+    updateControls();
+  }
+
   root.NotasTheme = {
     getPreference,
-    getTheme: () => documentElement.dataset.theme || resolve(getPreference()),
-    setPreference
+    getTheme,
+    setPreference,
+    toggle
   };
 })(typeof window !== 'undefined' ? window : globalThis);

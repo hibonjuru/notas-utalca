@@ -3925,14 +3925,6 @@ Evaluación 1\tAsistencia\tObligatoria\t01/01/1880\t80% mínimo\t%`;
           break;
         }
 
-        case 'set-theme': {
-          if (window.NotasTheme) {
-            window.NotasTheme.setPreference(btn.dataset.themePref || 'system');
-          }
-          renderAll();
-          break;
-        }
-
         case 'delete-all-courses': {
           if (confirm('¿Borrar todos tus ramos? Esta acción no se puede deshacer.')) {
             state = { courses: [] };

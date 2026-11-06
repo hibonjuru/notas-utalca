@@ -1747,7 +1747,7 @@ body {
    Cuentas: login, modo demo, configuración de Supabase y Mi Cuenta
    ========================================================================== */
 #app-shell {
-  min-height: 100vh;
+  min-height: 0;
 }
 
 .auth-gate {
@@ -2333,6 +2333,62 @@ body {
 .account-section .account-help {
   margin-top: 0.35rem;
 }
+
+/* Acciones de cabecera: sincronización y tema */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--surface-subtle);
+  color: var(--red);
+}
+
+.theme-toggle svg {
+  display: block;
+}
+
+.theme-toggle .theme-sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .theme-sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-toggle .theme-moon {
+  display: none;
+}
+
+.auth-theme-toggle {
+  position: fixed;
+  top: max(0.8rem, env(safe-area-inset-top));
+  right: max(0.8rem, env(safe-area-inset-right));
+  z-index: 10002;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
 
 
 
