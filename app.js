@@ -2499,7 +2499,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             <input type="file" id="att-screenshot-input" accept="image/*,application/pdf" hidden />
           </label>
           <button type="button" class="btn btn-sm" data-action="paste-attendance-text">
-            Pegar Texto
+            📋 Pegar Texto
           </button>
         </div>
       </div>
