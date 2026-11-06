@@ -36,6 +36,11 @@
   --shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
   --shadow-hover: 0 8px 24px rgba(15, 23, 42, 0.07);
   --shadow-modal: 0 -8px 30px rgba(0, 0, 0, 0.15);
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 260ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 * {
@@ -467,7 +472,8 @@ body {
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: all 0.15s ease;
+  transition: transform 0.18s var(--ease-out), background-color 0.16s ease,
+    color 0.16s ease, border-color 0.16s ease;
   padding: 0;
 }
 
@@ -503,16 +509,24 @@ body {
   border: none;
   background: transparent;
   font-family: inherit;
-  transition: transform 0.16s ease;
+  transition: transform 0.2s var(--ease-out);
   min-width: 0;
-}
-
-.circle-item:hover {
-  transform: translateY(-2px);
 }
 
 .circle-item:active {
   transform: scale(0.97);
+  transition-duration: 0.06s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .circle-item:hover {
+    transform: translateY(-3px);
+  }
+
+  .circle-item:hover .circle-icon-wrap {
+    border-color: var(--red);
+    box-shadow: var(--shadow-hover);
+  }
 }
 
 .circle-icon-wrap {
@@ -530,11 +544,6 @@ body {
   margin-bottom: 0.6rem;
   transition: border-color 0.16s ease, box-shadow 0.16s ease;
   flex-shrink: 0;
-}
-
-.circle-item:hover .circle-icon-wrap {
-  border-color: var(--red);
-  box-shadow: var(--shadow-hover);
 }
 
 .circle-big-stat {
@@ -645,7 +654,8 @@ body {
   color: var(--text-soft);
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.15s ease;
+  transition: transform 0.18s var(--ease-out), background-color 0.16s ease,
+    border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
 }
 
 .btn:hover {
@@ -654,7 +664,8 @@ body {
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
+  transition-duration: 0.06s;
 }
 
 .btn-red {
@@ -1008,7 +1019,8 @@ body {
   font-weight: 600;
   font-size: 0.81rem;
   color: var(--red);
-  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+  transition: border-color 0.16s ease, background-color 0.16s ease,
+    transform 0.2s var(--ease-out);
 }
 
 .upload-tile:hover {
@@ -1017,7 +1029,14 @@ body {
 }
 
 .upload-tile:active {
-  transform: scale(0.99);
+  transform: scale(0.985);
+  transition-duration: 0.06s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .upload-tile:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .upload-tile span.sub {
@@ -1112,7 +1131,8 @@ body {
 }
 
 .bottom-tab-btn:active {
-  transform: scale(0.94);
+  transform: scale(0.92);
+  transition-duration: 0.06s;
 }
 
 /* Reglas Mobile-First para iPhone / Celular (< 780px) */
@@ -1526,7 +1546,8 @@ body {
   padding: 0.18rem 0.45rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.16s ease, color 0.16s ease,
+    background-color 0.16s ease;
 }
 
 .btn-sub-action:hover {
@@ -1547,6 +1568,11 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  transition: opacity 0.16s ease;
+}
+
+.modal-backdrop.modal-closing {
+  opacity: 0;
 }
 
 .modal-backdrop[hidden] {
@@ -1572,7 +1598,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--border);
-  animation: slideUpModal 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUpModal 0.26s var(--ease-out);
   box-sizing: border-box;
 }
 
@@ -1584,11 +1610,35 @@ body {
 @media (min-width: 600px) {
   .modal-card {
     border-radius: 12px;
-    animation: fadeInModal 0.2s ease;
+    animation: fadeInModal 0.22s var(--ease-out);
   }
   @keyframes fadeInModal {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+.modal-backdrop.modal-closing .modal-card {
+  animation: modalOut 0.16s ease forwards;
+}
+
+@keyframes modalOut {
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@media (max-width: 599px) {
+  .modal-backdrop.modal-closing .modal-card {
+    animation-name: modalOutMobile;
+  }
+
+  @keyframes modalOutMobile {
+    to {
+      opacity: 0;
+      transform: translateY(100%);
+    }
   }
 }
 
@@ -1691,7 +1741,8 @@ body {
   font-weight: 600;
   color: var(--text-soft);
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: border-color 0.12s ease, color 0.12s ease,
+    background-color 0.12s ease;
 }
 
 .quick-num-btn:hover {
@@ -1791,7 +1842,8 @@ body {
   padding: 0.14rem 0.45rem;
   cursor: pointer;
   line-height: 1.3;
-  transition: all 0.15s ease;
+  transition: background-color 0.16s ease, color 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .btn-subdivide-trigger:hover {
@@ -2310,15 +2362,68 @@ body {
   }
 }
 
-/* Transiciones suaves entre vistas y entrada del login */
+/* Movimiento entre vistas, escalonado y entrada del login */
 #main-view-container.view-enter {
-  animation: viewEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: viewEnterMobile 0.28s var(--ease-out);
+  will-change: transform, opacity;
 }
 
-@keyframes viewEnter {
+@keyframes viewEnterMobile {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(16px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes viewEnterDesktop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: 600px) {
+  #main-view-container.view-enter {
+    animation-name: viewEnterDesktop;
+    animation-duration: 0.2s;
+  }
+}
+
+.auth-card {
+  animation: authCardEnter var(--motion-slow) var(--ease-out);
+}
+
+@keyframes authCardEnter {
+  from {
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.view-enter .circle-item,
+.view-enter .unit-block,
+.view-enter .account-card,
+.view-enter .account-section,
+.view-enter .account-actions,
+.view-enter .upload-tile {
+  animation: itemIn 0.24s var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 24ms);
+}
+
+@keyframes itemIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -2326,23 +2431,40 @@ body {
   }
 }
 
-.auth-card {
-  animation: authCardEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes authCardEnter {
-  from {
-    transform: translateY(8px) scale(0.995);
-  }
-  to {
-    transform: translateY(0) scale(1);
+@media (max-width: 599px) {
+  .view-enter .circle-item,
+  .view-enter .unit-block,
+  .view-enter .account-card,
+  .view-enter .account-section,
+  .view-enter .account-actions,
+  .view-enter .upload-tile {
+    animation-delay: calc(var(--i, 0) * 20ms);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   #main-view-container.view-enter,
-  .auth-card {
+  .auth-card,
+  .modal-card,
+  .modal-backdrop.modal-closing .modal-card,
+  .view-enter .circle-item,
+  .view-enter .unit-block,
+  .view-enter .account-card,
+  .view-enter .account-section,
+  .view-enter .account-actions,
+  .view-enter .upload-tile {
     animation: none;
+    will-change: auto;
+  }
+
+  .btn,
+  .circle-item,
+  .circle-icon-wrap,
+  .upload-tile,
+  .bottom-tab-btn,
+  .sidebar-link-btn,
+  .theme-toggle {
+    transition: none;
   }
 
   .btn:active,
@@ -2350,7 +2472,28 @@ body {
   .circle-item:active,
   .bottom-tab-btn:active {
     transform: none;
+    transition-duration: 0s;
   }
+}
+
+/* Transición de color al cambiar de tema (solo durante el cambio) */
+:root.theme-transition,
+:root.theme-transition body,
+:root.theme-transition .auth-gate,
+:root.theme-transition .auth-card,
+:root.theme-transition .portal-content-panel,
+:root.theme-transition .portal-sidebar,
+:root.theme-transition .portal-feature-card,
+:root.theme-transition .mobile-app-header,
+:root.theme-transition .bottom-nav,
+:root.theme-transition .utalca-red-box,
+:root.theme-transition .utalca-tabs-bar,
+:root.theme-transition .unit-block,
+:root.theme-transition .circle-icon-wrap,
+:root.theme-transition .account-card,
+:root.theme-transition .modal-card {
+  transition: background-color 0.22s ease, color 0.22s ease,
+    border-color 0.22s ease;
 }
 
 /* ==========================================================================

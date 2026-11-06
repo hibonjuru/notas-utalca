@@ -1181,6 +1181,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     count: 4,
     baseName: 'Control'
   };
+  let modalCloseTimer = null;
 
   function openSubdivideModal(courseId, unitId, evalId) {
     const course = state.courses.find((c) => c.id === courseId);
@@ -1221,13 +1222,35 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
     updateSubdividePreview(ev.weight, currentCount, baseName);
 
-    if (modalEl) modalEl.hidden = false;
+    if (modalEl) {
+      if (modalCloseTimer) {
+        clearTimeout(modalCloseTimer);
+        modalCloseTimer = null;
+      }
+      modalEl.classList.remove('modal-closing');
+      modalEl.hidden = false;
+    }
   }
 
   function closeSubdivideModal() {
     const modalEl = document.getElementById('subdivide-modal');
-    if (modalEl) modalEl.hidden = true;
     subdivideTarget = { courseId: null, unitId: null, evalId: null, count: 4, baseName: 'Control' };
+
+    if (!modalEl) return;
+    if (modalEl.hidden || modalEl.classList.contains('modal-closing')) return;
+
+    if (prefersReducedMotion()) {
+      modalEl.hidden = true;
+      return;
+    }
+
+    modalEl.classList.add('modal-closing');
+    if (modalCloseTimer) clearTimeout(modalCloseTimer);
+    modalCloseTimer = setTimeout(() => {
+      modalCloseTimer = null;
+      modalEl.classList.remove('modal-closing');
+      modalEl.hidden = true;
+    }, 160);
   }
 
   function updateSubdividePreview(weight, count, baseName) {
@@ -1734,7 +1757,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     isDeleteModePromedios = false;
     isDeleteModeAsistencias = false;
     renderAll();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   }
 
   function renderSidebarAndNav() {
@@ -1807,6 +1830,21 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     });
   }
 
+  function prefersReducedMotion() {
+    return Boolean(
+      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
+  function applyStagger(container) {
+    const items = container.querySelectorAll(
+      '.circle-item, .unit-block, .account-card, .account-section, .account-actions, .upload-tile'
+    );
+    items.forEach((item, index) => {
+      item.style.setProperty('--i', String(Math.min(index, 5)));
+    });
+  }
+
   function renderAll() {
     renderSidebarAndNav();
     const container = document.getElementById('main-view-container');
@@ -1831,14 +1869,20 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     const viewKey = `${currentSection}:${selectedCourseId || ''}`;
     if (viewKey !== lastRenderedViewKey) {
       lastRenderedViewKey = viewKey;
-      container.classList.remove('view-enter');
-      void container.offsetWidth;
-      container.classList.add('view-enter');
-      if (viewAnimationTimer) clearTimeout(viewAnimationTimer);
-      viewAnimationTimer = setTimeout(() => {
+      if (viewAnimationTimer) {
+        clearTimeout(viewAnimationTimer);
         viewAnimationTimer = null;
-        container.classList.remove('view-enter');
-      }, 320);
+      }
+      container.classList.remove('view-enter');
+      applyStagger(container);
+      if (!prefersReducedMotion()) {
+        void container.offsetWidth;
+        container.classList.add('view-enter');
+        viewAnimationTimer = setTimeout(() => {
+          viewAnimationTimer = null;
+          container.classList.remove('view-enter');
+        }, 450);
+      }
     }
   }
 

@@ -9,7 +9,11 @@
   const STORAGE_KEY = 'notas_utalca_theme_v1';
   const VALID = ['system', 'light', 'dark'];
   const media = root.matchMedia ? root.matchMedia('(prefers-color-scheme: dark)') : null;
+  const reduceMotion = root.matchMedia
+    ? root.matchMedia('(prefers-reduced-motion: reduce)')
+    : null;
   const documentElement = root.document.documentElement;
+  let transitionTimer = null;
 
   function getPreference() {
     try {
@@ -61,6 +65,16 @@
 
   apply(getPreference());
 
+  function startThemeTransition() {
+    if (reduceMotion && reduceMotion.matches) return;
+    documentElement.classList.add('theme-transition');
+    if (transitionTimer) root.clearTimeout(transitionTimer);
+    transitionTimer = root.setTimeout(() => {
+      transitionTimer = null;
+      documentElement.classList.remove('theme-transition');
+    }, 230);
+  }
+
   function setPreference(preference) {
     if (!VALID.includes(preference)) return;
     try {
@@ -68,6 +82,7 @@
     } catch (error) {
       /* noop */
     }
+    startThemeTransition();
     apply(preference);
     root.dispatchEvent(
       new CustomEvent('notas-theme-change', {
@@ -81,7 +96,10 @@
   }
 
   function handleSystemChange() {
-    if (getPreference() === 'system') apply('system');
+    if (getPreference() === 'system') {
+      startThemeTransition();
+      apply('system');
+    }
   }
 
   if (media) {
