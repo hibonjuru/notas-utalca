@@ -1167,6 +1167,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   let remoteLoadFailed = false;
   let bannerTimer = null;
   let currentSection = 'home';
+  let lastRenderedViewKey = '';
   let selectedCourseId = null;
   let pendingImportCourse = null;
   let isDeleteModePromedios = false;
@@ -1825,6 +1826,14 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     } else if (currentSection === 'cuenta') {
       container.innerHTML = renderAccountView();
     }
+
+    const viewKey = `${currentSection}:${selectedCourseId || ''}`;
+    if (viewKey !== lastRenderedViewKey) {
+      lastRenderedViewKey = viewKey;
+      container.classList.remove('view-enter');
+      void container.offsetWidth;
+      container.classList.add('view-enter');
+    }
   }
 
   function formatDisplayCourseName(rawName) {
@@ -2480,11 +2489,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
               : ''
           }
           <label class="btn btn-red btn-sm" for="att-screenshot-input" style="cursor:pointer; display:inline-flex; align-items:center; gap:0.35rem;">
-            <span>📷 Subir Pantallazo o PDF</span>
+            <span>Subir Pantallazo o PDF</span>
             <input type="file" id="att-screenshot-input" accept="image/*,application/pdf" hidden />
           </label>
           <button type="button" class="btn btn-sm" data-action="paste-attendance-text">
-            📋 Pegar Texto
+            Pegar Texto
           </button>
         </div>
       </div>
@@ -2526,7 +2535,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         </button>
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
           <label class="btn btn-red btn-sm" for="course-att-screenshot-input" style="cursor:pointer; display:inline-flex; align-items:center; gap:0.35rem;">
-            <span>📷 Actualizar con Pantallazo / PDF</span>
+            <span>Actualizar con Pantallazo / PDF</span>
             <input type="file" id="course-att-screenshot-input" data-course-id="${course.id}" accept="image/*,application/pdf" hidden />
           </label>
           <button
@@ -3265,7 +3274,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         previewEl.style.display = 'block';
         previewEl.innerHTML = `
           <div style="font-weight:700; color:var(--red); font-size:0.9rem; margin-bottom:0.5rem;">
-            🎓 Asistencia detectada de la Utalca:
+            Asistencia detectada de la Utalca:
           </div>
           <div style="display:flex; flex-direction:column; gap:0.65rem; width:100%; max-width:100%;">
             ${detected

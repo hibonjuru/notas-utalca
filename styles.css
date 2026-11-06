@@ -358,6 +358,7 @@ body {
   text-align: left;
   cursor: pointer;
   font-family: inherit;
+  transition: color 0.15s ease;
   width: 100%;
   white-space: normal;
   word-break: break-word;
@@ -510,6 +511,10 @@ body {
   transform: translateY(-2px);
 }
 
+.circle-item:active {
+  transform: scale(0.97);
+}
+
 .circle-icon-wrap {
   width: 74px;
   height: 74px;
@@ -646,6 +651,10 @@ body {
 .btn:hover {
   border-color: var(--red);
   color: var(--red);
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-red {
@@ -999,11 +1008,16 @@ body {
   font-weight: 600;
   font-size: 0.81rem;
   color: var(--red);
+  transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
 }
 
 .upload-tile:hover {
   border-color: var(--red);
   background: var(--red-soft);
+}
+
+.upload-tile:active {
+  transform: scale(0.99);
 }
 
 .upload-tile span.sub {
@@ -1089,11 +1103,16 @@ body {
   color: var(--text-muted);
   cursor: pointer;
   font-family: inherit;
+  transition: color 0.15s ease, transform 0.12s ease;
 }
 
 .bottom-tab-btn.active {
   color: var(--red);
   font-weight: 600;
+}
+
+.bottom-tab-btn:active {
+  transform: scale(0.94);
 }
 
 /* Reglas Mobile-First para iPhone / Celular (< 780px) */
@@ -2288,6 +2307,51 @@ body {
   .boot-spinner,
   .sync-indicator.syncing .sync-spin {
     animation: none;
+  }
+}
+
+/* Transiciones suaves entre vistas y entrada del login */
+#main-view-container.view-enter {
+  animation: viewEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes viewEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card {
+  animation: authCardEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes authCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #main-view-container.view-enter,
+  .auth-card {
+    animation: none;
+  }
+
+  .btn:active,
+  .upload-tile:active,
+  .circle-item:active,
+  .bottom-tab-btn:active {
+    transform: none;
   }
 }
 
